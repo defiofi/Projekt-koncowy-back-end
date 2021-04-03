@@ -1,9 +1,15 @@
 package com.kodilla.finalproject.controller;
 
+import com.kodilla.finalproject.domain.Currency;
+import com.kodilla.finalproject.domain.User;
 import com.kodilla.finalproject.domain.UserDTO;
+import com.kodilla.finalproject.mapper.CurrencyMapper;
+import com.kodilla.finalproject.mapper.UserMapper;
+import com.kodilla.finalproject.service.UserDatabase;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,30 +17,41 @@ import java.util.List;
 @RestController
 @RequestMapping("/project")
 public class UserControler {
+
+    private final UserDatabase userDatabase;
+    private final UserMapper userMapper;
+    private final CurrencyMapper currencyMapper;
+
+    public UserControler(UserDatabase userDatabase, UserMapper userMapper, CurrencyMapper currencyMapper){
+        this.userDatabase = userDatabase;
+        this.userMapper = userMapper;
+        this.currencyMapper = currencyMapper;
+    }
+
     @RequestMapping(method = RequestMethod.GET, value = "/user/{userID}")
     public UserDTO getUser(@PathVariable Long userID) throws UserNotFoundException{
-        // DO NAPISANIA WLASCIWA METODA !!
-        return new UserDTO(1L,"Mariusz");
+            return userMapper.maptoUserDTO(userDatabase.findUser(userID).orElseThrow(UserNotFoundException::new));
     }
     @RequestMapping(method = RequestMethod.GET, value = "/user/*")
-    public List<UserDTO> getUser() throws UserNotFoundException{
-        // DO NAPISANIA WLASCIWA METODA !!
-        List<UserDTO> userDTOList = new ArrayList<>();
-        userDTOList.add(new UserDTO(1L,"Mariusz"));
-        userDTOList.add(new UserDTO(2L,"Bartosz"));
+    public List<UserDTO> getUsers() {
+        List<UserDTO> userDTOList = userMapper.mapToListUserDTO(userDatabase.showUsers());
         return  userDTOList;
     }
     @RequestMapping(method = RequestMethod.POST, value = "/user" , consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void createUser(@RequestBody UserDTO userDTO){
-        // DO NAPISANIA WLASCIWA METODA !!
+    public UserDTO createUser(@RequestBody UserDTO userDTO){
+        if(userDatabase.findUserByName(userDTO.getName()).isPresent()){
+            return userDTO;
+        }
+        User user = userDatabase.save(new User(userMapper.maptoUser(userDTO).getUserName(), null));
+        return userMapper.maptoUserDTO(user);
     }
     @RequestMapping(method = RequestMethod.PUT, value = "/user" )
     public UserDTO changeUserName(@RequestParam Long userId , @RequestParam String userName){
-        // DO NAPISANIA WLASCIWA METODA !!
-        return new UserDTO(userId, userName);
+        User user = userDatabase.save(new User(userId, userName, userDatabase.findUser(userId).orElse(new User()).getCurrency()));
+        return userMapper.maptoUserDTO(user);
     }
     @RequestMapping(method = RequestMethod.DELETE, value = "/user/{userID}")
     public void deleteUser(@PathVariable Long userID){
-        // DO NAPISANIA WLASCIWA METODA !!
+        userDatabase.deleteUser(userID);
     }
 }

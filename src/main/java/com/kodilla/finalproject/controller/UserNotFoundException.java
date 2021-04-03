@@ -1,4 +1,6 @@
 package com.kodilla.finalproject.controller;
 
-public class UserNotFoundException extends Exception{
+import java.util.function.Supplier;
+
+public class UserNotFoundException extends Exception {
 }

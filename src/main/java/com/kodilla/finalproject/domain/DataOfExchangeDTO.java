@@ -3,21 +3,21 @@ package com.kodilla.finalproject.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DataOfExchangeDTO {
     @JsonProperty("tradingDate")
-    Date tradingDate;
+    LocalDate tradingDate;
     @JsonProperty("rates")
     RateOfExchangeDTO[] rates;
 
     public DataOfExchangeDTO(){
     }
-    public DataOfExchangeDTO(Date tradingDate , RateOfExchangeDTO[] rates) {
+    public DataOfExchangeDTO(LocalDate tradingDate , RateOfExchangeDTO[] rates) {
         this.tradingDate = tradingDate;
         for(int i = 0 ; i< rates.length ; i++) {
             this.rates[i] = new RateOfExchangeDTO(
@@ -26,7 +26,7 @@ public class DataOfExchangeDTO {
         }
     }
 
-    public Date getTradingDate() {
+    public  LocalDate getTradingDate() {
         return tradingDate;
     }
     public List<RateOfExchangeDTO> getRates(){
