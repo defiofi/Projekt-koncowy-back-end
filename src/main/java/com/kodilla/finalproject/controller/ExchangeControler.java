@@ -2,7 +2,10 @@ package com.kodilla.finalproject.controller;
 
 import com.kodilla.finalproject.domain.*;
 import com.kodilla.finalproject.mapper.CurrencyMapper;
+import com.kodilla.finalproject.mapper.DataOfExchangeMapper;
+import com.kodilla.finalproject.nbp.client.NbpClient;
 import com.kodilla.finalproject.service.CurrencyDatabase;
+import com.kodilla.finalproject.service.DataOfExchangeDatabase;
 import com.kodilla.finalproject.service.UserDatabase;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,21 +22,32 @@ public class ExchangeControler {
 
     private final UserDatabase userDatabase;
     private final CurrencyMapper currencyMapper;
+    private final DataOfExchangeMapper dataOfExchangeMapper;
     private final CurrencyDatabase currencyDatabase;
+    private final DataOfExchangeDatabase dataOfExchangeDatabase;
+    private NbpClient nbpClient;
 
-    public ExchangeControler(UserDatabase userDatabase, CurrencyMapper currencyMapper, CurrencyDatabase currencyDatabase){
+    public ExchangeControler(UserDatabase userDatabase,
+                             CurrencyMapper currencyMapper,
+                             DataOfExchangeMapper dataOfExchangeMapper,
+                             CurrencyDatabase currencyDatabase,
+                             DataOfExchangeDatabase dataOfExchangeDatabase,
+                             NbpClient nbpClient){
         this.userDatabase = userDatabase;
         this.currencyMapper = currencyMapper;
+        this.dataOfExchangeMapper = dataOfExchangeMapper;
         this.currencyDatabase = currencyDatabase;
+        this.dataOfExchangeDatabase = dataOfExchangeDatabase;
+        this.nbpClient = nbpClient;
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/currency/{userId}")
     public List<CurrencyDTO> getCurrency(@PathVariable Long userId) {
         if(userDatabase.findUser(userId).isPresent()){
             return currencyMapper.maptoListCurrencyDTO(userDatabase.findUser(userId).get().getCurrency());
+        }else {
+            return new ArrayList<>();
         }
-            List<CurrencyDTO> list = new ArrayList<>();
-            return list;
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/currency")
@@ -42,18 +56,16 @@ public class ExchangeControler {
             @RequestParam String currency_Code) throws UserNotFoundException {
         Optional<User> searchedUser = userDatabase.findUser(userId);
         if(searchedUser.isPresent()){
-            List<Currency> searchedCurrencyList = searchedUser.get().getCurrency().stream()
-                    .filter(c -> c.getCurrencyCode().equals(currency_Code))
-                    .collect(Collectors.toList());
-            if(searchedCurrencyList.size() == 0){
+            Currency searchedCurrency = searchCurrency(searchedUser.orElse(new User()), currency_Code);
+            if(searchedCurrency.getCurrencyID()!=null){
+                return currencyMapper.maptoCurrencyDTO(searchedCurrency);
+            }else{
                 Currency newCurrency = currencyDatabase.save(new Currency(
                         currencyMapper.mapTocurrencyName(currency_Code),
                         currency_Code ,
                         new BigDecimal(0.0),
                         searchedUser.get()));
                 return currencyMapper.maptoCurrencyDTO(newCurrency);
-            } else {
-                return currencyMapper.maptoCurrencyDTO(searchedCurrencyList.get(0));
             }
         } else{ throw new UserNotFoundException();}
     }
@@ -66,20 +78,16 @@ public class ExchangeControler {
 
         Optional<User> searchedUser = userDatabase.findUser(userId);
         if(searchedUser.isPresent()){
-            List<Currency> searchedCurrencyList = searchedUser.get().getCurrency().stream()
-                    .filter(c -> c.getCurrencyCode().equals(currency_Code))
-                    .collect(Collectors.toList());
-            if(searchedCurrencyList.size() == 0){
-                return currencyMapper.maptoCurrencyDTO(new Currency(null,null,null,null));
-            } else {
+            Currency searchedCurrency = searchCurrency(searchedUser.orElse(new User()), currency_Code);
+            if(searchedCurrency.getCurrencyID()!=null){
                 Currency topUpCurrency = currencyDatabase.save(new Currency(
-                        searchedCurrencyList.get(0).getCurrencyID(),
-                        searchedCurrencyList.get(0).getCurrencyName(),
-                        searchedCurrencyList.get(0).getCurrencyCode(),
-                        new BigDecimal(value).add(searchedCurrencyList.get(0).getAccount()),
-                        searchedCurrencyList.get(0).getUser()));
+                        searchedCurrency.getCurrencyID(),
+                        searchedCurrency.getCurrencyName(),
+                        searchedCurrency.getCurrencyCode(),
+                        new BigDecimal(value).add(searchedCurrency.getAccount()),
+                        searchedCurrency.getUser()));
                 return currencyMapper.maptoCurrencyDTO(topUpCurrency);
-            }
+            } else {return currencyMapper.maptoCurrencyDTO(new Currency(null,null,null,null));}
         } else{ throw new UserNotFoundException();}
     }
 
@@ -90,50 +98,115 @@ public class ExchangeControler {
             @RequestParam Double value) throws UserNotFoundException{
         Optional<User> searchedUser = userDatabase.findUser(userId);
         if(searchedUser.isPresent()){
-            List<Currency> searchedCurrencyList = searchedUser.get().getCurrency().stream()
-                    .filter(c -> c.getCurrencyCode().equals(currency_Code))
-                    .collect(Collectors.toList());
-            if(searchedCurrencyList.size() == 0){
-                return currencyMapper.maptoCurrencyDTO(new Currency(null,null,null,null));
-            } else if(searchedCurrencyList.get(0).getAccount().compareTo( new BigDecimal(value))>=0) {
+            Currency searchedCurrency = searchCurrency(searchedUser.orElse(new User()), currency_Code);
+            if(searchedCurrency.getCurrencyID()!=null){
                 Currency payOutCurrency = currencyDatabase.save(new Currency(
-                        searchedCurrencyList.get(0).getCurrencyID(),
-                        searchedCurrencyList.get(0).getCurrencyName(),
-                        searchedCurrencyList.get(0).getCurrencyCode(),
-                        searchedCurrencyList.get(0).getAccount().subtract(new BigDecimal(value)),
-                        searchedCurrencyList.get(0).getUser()));
+                        searchedCurrency.getCurrencyID(),
+                        searchedCurrency.getCurrencyName(),
+                        searchedCurrency.getCurrencyCode(),
+                        searchedCurrency.getAccount().subtract(new BigDecimal(value)),
+                        searchedCurrency.getUser()));
                 return currencyMapper.maptoCurrencyDTO(payOutCurrency);
-            } else {
-                return currencyMapper.maptoCurrencyDTO(new Currency(null,null,null,null));
-            }
+            } else {return currencyMapper.maptoCurrencyDTO(new Currency(null,null,null,null));}
         } else{ throw new UserNotFoundException();}
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/exchange")
     public List<RateOfExchangeDTO> getActualRates() {
-        // DO NAPISANIA WLASCIWA METODA !!
-        List<RateOfExchangeDTO> rateList = new ArrayList<>();
-        rateList.add(new RateOfExchangeDTO("dolar amerykański", "USD", 3.1415, 3.4567));
-        return rateList;
+        DataOfExchange rates = checkRates();
+            return dataOfExchangeMapper.maptoListRateOfExchangeDTO(rates.getRateOfExchange());
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/exchange/buy")
-    public List<CurrencyDTO> buyCurrency(@RequestParam Long userId, @RequestParam String currencyCode, @RequestParam Double value) {
-        // DO NAPISANIA WLASCIWA METODA !!
-        List<CurrencyDTO> currencyDTOList = new ArrayList<>();
-        currencyDTOList.add(new CurrencyDTO("","PLN", new BigDecimal(1000.0)
-                .subtract(new BigDecimal(value).multiply(new BigDecimal(3.0)))));
-        currencyDTOList.add(new CurrencyDTO("", currencyCode, new BigDecimal(value)));
-        return currencyDTOList;
+    public List<CurrencyDTO> buyCurrency(@RequestParam Long userId, @RequestParam String currency_Code, @RequestParam Double value) throws UserNotFoundException{
+        /** Opis działania metody:
+         * -Sprawdzenie czy kursy walut są aktualne, jak nie to ich pobranie, znalezienie odpowiedniego kursu wymiany waluty.
+         * -Odnalezienie danych użytkownika ( odnalezienie konta złotówkowego i kupowanej waluty).
+         * -sprawdzenie czy użytkownik może zakupic walutę w żądanej ilości, jeżeli tak to wykonanie transakcji*/
+        DataOfExchange rates = checkRates();
+        RateOfExchange currencyRate = searchRate(rates, currency_Code);
+        Optional<User> searchedUser = userDatabase.findUser(userId);
+        if(searchedUser.isEmpty()){
+            throw new UserNotFoundException();
+        }
+        Currency userPLN = searchCurrency(searchedUser.orElse(new User()), "PLN");
+        Currency boughtCurrency = searchCurrency(searchedUser.orElse(new User()), currency_Code);
+        if(userPLN.getAccount().subtract(new BigDecimal(currencyRate.getAsk()).multiply(new BigDecimal(value))).compareTo(new BigDecimal(0.0))<0){
+            return currencyMapper.maptoListCurrencyDTO(searchedUser.get().getCurrency());
+        } else{
+            currencyDatabase.save(new Currency(boughtCurrency.getCurrencyID(),
+                    boughtCurrency.getCurrencyName(),
+                    boughtCurrency.getCurrencyCode(),
+                    new BigDecimal(value).add(boughtCurrency.getAccount()),
+                    boughtCurrency.getUser()));
+            currencyDatabase.save(new Currency(userPLN.getCurrencyID(),
+                    userPLN.getCurrencyName(),
+                    userPLN.getCurrencyCode(),
+                    userPLN.getAccount().subtract(new BigDecimal(currencyRate.getAsk()).multiply(new BigDecimal(value))),
+                    userPLN.getUser()));
+            return currencyMapper.maptoListCurrencyDTO(searchedUser.get().getCurrency());
+        }
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/exchange/sell")
-    public List<CurrencyDTO> sellCurrency(@RequestParam Long userId, @RequestParam String currencyCode, @RequestParam Double value) {
-        // DO NAPISANIA WLASCIWA METODA !!
-        List<CurrencyDTO> currencyDTOList = new ArrayList<>();
-        currencyDTOList.add(new CurrencyDTO("","PLN", new BigDecimal(1000.0)
-                .add(new BigDecimal(value).multiply(new BigDecimal(0.33)))));
-        currencyDTOList.add(new CurrencyDTO("", currencyCode, new BigDecimal(0.0)));
-        return currencyDTOList;
+    public List<CurrencyDTO> sellCurrency(@RequestParam Long userId, @RequestParam String currency_Code, @RequestParam Double value) throws UserNotFoundException{
+        /** Opis działania metody:
+         * -Sprawdzenie czy kursy walut są aktualne, jak nie to ich pobranie, znalezienie odpowiedniego kursu wymiany waluty.
+         * -Odnalezienie danych użytkownika ( odnalezienie konta złotówkowego i sprzedawanej waluty).
+         * -sprawdzenie czy użytkownik może sprzedać walutę w żądanej ilości, jeżeli tak to wykonanie transakcji*/
+        DataOfExchange rates = checkRates();
+        RateOfExchange currencyRate = searchRate(rates, currency_Code);
+        Optional<User> searchedUser = userDatabase.findUser(userId);
+        if(searchedUser.isEmpty()) {
+            throw new UserNotFoundException();
+        }
+        Currency userPLN = searchCurrency(searchedUser.orElse(new User()), "PLN");
+        Currency soldCurrency = searchCurrency(searchedUser.orElse(new User()), currency_Code);
+        if(soldCurrency.getAccount().subtract(new BigDecimal(value)).compareTo(new BigDecimal(0.0))<0){
+            return currencyMapper.maptoListCurrencyDTO(searchedUser.get().getCurrency());
+        }else{
+            currencyDatabase.save(new Currency(soldCurrency.getCurrencyID(),
+                    soldCurrency.getCurrencyName(),
+                    soldCurrency.getCurrencyCode(),
+                    soldCurrency.getAccount().subtract(new BigDecimal(value)),
+                    soldCurrency.getUser()));
+            currencyDatabase.save(new Currency(userPLN.getCurrencyID(),
+                    userPLN.getCurrencyName(),
+                    userPLN.getCurrencyCode(),
+                    userPLN.getAccount().add(new BigDecimal(currencyRate.getBid()).multiply(new BigDecimal(value))),
+                    userPLN.getUser()));
+            return currencyMapper.maptoListCurrencyDTO(searchedUser.get().getCurrency());
+        }
+    }
+    private DataOfExchange checkRates(){
+        List<DataOfExchange> ratesList = dataOfExchangeDatabase.findAll().stream()
+                .filter(d -> d.getTradingDate().compareTo(nbpClient.getActualNbpCurrency().getTradingDate())==0)
+                .collect(Collectors.toList());
+        if(ratesList.size()==0){
+            DataOfExchange dataOfExchange = dataOfExchangeDatabase.save(new DataOfExchange(nbpClient.getActualNbpCurrency().getTradingDate(), null));
+            DataOfExchange newDataOfExchange = dataOfExchangeMapper.maptoDataOfExchange(nbpClient.getActualNbpCurrency(), dataOfExchange.getDataID());
+            ratesList.set(0, dataOfExchangeDatabase.save(newDataOfExchange));
+        }
+        return ratesList.get(0);
+    }
+    private RateOfExchange searchRate(DataOfExchange dataOfExchange, String currency_Code){
+        List<RateOfExchange> list = dataOfExchange.getRateOfExchange().stream()
+                .filter(r -> r.getCurrencyCode().equals(currency_Code))
+                .collect(Collectors.toList());
+        if(list.size()>0) {
+            return list.get(0);
+        } else {
+            return new RateOfExchange();
+        }
+    }
+    private Currency searchCurrency(User user, String currency_Code){
+        List<Currency> list = user.getCurrency().stream()
+                .filter(c -> c.getCurrencyCode().equals(currency_Code))
+                .collect(Collectors.toList());
+        if(list.size()>0) {
+            return list.get(0);
+        } else {
+            return new Currency();
+        }
     }
 }

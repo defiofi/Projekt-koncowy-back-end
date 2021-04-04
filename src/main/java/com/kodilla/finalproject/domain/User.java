@@ -10,6 +10,7 @@ public class User {
     private Long userID;
     private String userName;
     private List<Currency> currencyList;
+
     public User(){}
 
     public User(String userName, List<Currency> currencyList){

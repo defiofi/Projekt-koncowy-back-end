@@ -53,7 +53,7 @@ public class Currency {
     }
 
     @ManyToOne(cascade = CascadeType.PERSIST)
-    //@JoinColumn(name = "userID")
+
     public User getUser() { return user; }
 
     private void setCurrencyID(Long currencyID) { this.currencyID = currencyID; }
