@@ -7,6 +7,8 @@ public class CurrencyDTO {
     private String currencyCode;
     private BigDecimal account;
 
+    public CurrencyDTO(){}
+
     public CurrencyDTO(String currencyName, String currencyCode, BigDecimal account) {
         this.currencyName = currencyName;
         this.currencyCode = currencyCode;

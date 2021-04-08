@@ -38,7 +38,7 @@ public class DataOfExchange {
     @OneToMany(
             targetEntity = RateOfExchange.class,
             cascade = CascadeType.ALL,
-            fetch = FetchType.LAZY
+            fetch = FetchType.EAGER
     )
     public List<RateOfExchange> getRateOfExchange() {
         return rateOfExchangeList;

@@ -8,6 +8,10 @@ public class UserDTO {
         this.userID = userID;
         this.name = name;
     }
+    public UserDTO(String name){
+        this.name = name;
+        this.userID = null;
+    }
 
     public Long getUserID() {
         return userID;

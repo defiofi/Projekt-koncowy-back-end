@@ -18,7 +18,8 @@ public class CurrencyDatabase {
     public Currency save(final Currency currency){
         return currencyRepository.save(currency);
     }
-    public List<Currency> findCurrency(final Long userID){
-       return currencyRepository.findByUser(userID);
+    public void delete(final Currency currency){
+        currencyRepository.delete(currency);
     }
+    public void deleteByID(Long id){currencyRepository.deleteById(id);}
 }

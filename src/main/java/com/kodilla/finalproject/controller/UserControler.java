@@ -1,6 +1,5 @@
 package com.kodilla.finalproject.controller;
 
-import com.kodilla.finalproject.domain.Currency;
 import com.kodilla.finalproject.domain.User;
 import com.kodilla.finalproject.domain.UserDTO;
 import com.kodilla.finalproject.mapper.CurrencyMapper;
@@ -9,8 +8,6 @@ import com.kodilla.finalproject.service.UserDatabase;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 @CrossOrigin(origins = "*")
@@ -20,12 +17,10 @@ public class UserControler {
 
     private final UserDatabase userDatabase;
     private final UserMapper userMapper;
-    private final CurrencyMapper currencyMapper;
 
-    public UserControler(UserDatabase userDatabase, UserMapper userMapper, CurrencyMapper currencyMapper){
+    public UserControler(UserDatabase userDatabase, UserMapper userMapper){
         this.userDatabase = userDatabase;
         this.userMapper = userMapper;
-        this.currencyMapper = currencyMapper;
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/user/{userID}")
@@ -42,7 +37,7 @@ public class UserControler {
         if(userDatabase.findUserByName(userDTO.getName()).isPresent()){
             return userDTO;
         }
-        User user = userDatabase.save(new User(userMapper.maptoUser(userDTO).getUserName(), null));
+        User user = userDatabase.save(new User(userDTO.getName(), null));
         return userMapper.maptoUserDTO(user);
     }
     @RequestMapping(method = RequestMethod.PUT, value = "/user" )

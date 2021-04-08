@@ -4,6 +4,7 @@ import com.kodilla.finalproject.domain.*;
 import com.kodilla.finalproject.mapper.CurrencyMapper;
 import com.kodilla.finalproject.mapper.DataOfExchangeMapper;
 import com.kodilla.finalproject.nbp.client.NbpClient;
+import com.kodilla.finalproject.repository.CurrencyRepository;
 import com.kodilla.finalproject.service.CurrencyDatabase;
 import com.kodilla.finalproject.service.DataOfExchangeDatabase;
 import com.kodilla.finalproject.service.UserDatabase;
@@ -25,6 +26,7 @@ public class ExchangeControler {
     private final DataOfExchangeMapper dataOfExchangeMapper;
     private final CurrencyDatabase currencyDatabase;
     private final DataOfExchangeDatabase dataOfExchangeDatabase;
+    private CurrencyRepository currencyRepository;
     private NbpClient nbpClient;
 
     public ExchangeControler(UserDatabase userDatabase,
@@ -32,13 +34,15 @@ public class ExchangeControler {
                              DataOfExchangeMapper dataOfExchangeMapper,
                              CurrencyDatabase currencyDatabase,
                              DataOfExchangeDatabase dataOfExchangeDatabase,
-                             NbpClient nbpClient){
+                             NbpClient nbpClient,
+                             CurrencyRepository currencyRepository){
         this.userDatabase = userDatabase;
         this.currencyMapper = currencyMapper;
         this.dataOfExchangeMapper = dataOfExchangeMapper;
         this.currencyDatabase = currencyDatabase;
         this.dataOfExchangeDatabase = dataOfExchangeDatabase;
         this.nbpClient = nbpClient;
+        this.currencyRepository = currencyRepository;
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/currency/{userId}")
@@ -65,11 +69,20 @@ public class ExchangeControler {
                         currency_Code ,
                         new BigDecimal(0.0),
                         searchedUser.get()));
+
                 return currencyMapper.maptoCurrencyDTO(newCurrency);
             }
         } else{ throw new UserNotFoundException();}
     }
 
+    @RequestMapping(method = RequestMethod.DELETE, value = "/currency")
+    public void DeleteCurrency(
+            @RequestParam Long userId,
+            @RequestParam String currency_Code) throws UserNotFoundException {
+        Optional<User> searchedUser = userDatabase.findUser(userId);
+        Currency searchedCurrency = searchCurrency(searchedUser.orElse(new User()), currency_Code);
+        currencyRepository.deleteById(searchedCurrency.getCurrencyID());
+    }
     @RequestMapping(method = RequestMethod.PUT, value = "/currency/topUp")
     public CurrencyDTO topUpAccount(
             @RequestParam Long userId,
