@@ -1,9 +1,8 @@
 package com.kodilla.finalproject.controller;
 
 import com.google.gson.Gson;
-import com.kodilla.finalproject.domain.Currency;
-import com.kodilla.finalproject.domain.User;
 import com.kodilla.finalproject.domain.UserDTO;
+import com.kodilla.finalproject.facade.UserFacade;
 import com.kodilla.finalproject.mapper.UserMapper;
 import com.kodilla.finalproject.service.UserDatabase;
 import org.hamcrest.Matchers;
@@ -19,7 +18,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -37,13 +35,14 @@ class UserControlerTest {
     @MockBean
     private UserMapper userMapper;
 
+    @MockBean
+    private UserFacade userFacade;
+
+
     @Test
     public void UserControllerGetUser() throws Exception {
         //GIVEN
-        List<Currency> currencyList = new ArrayList<>();
-        Optional<User> searchedUser = Optional.ofNullable(new User(1L, "Mateusz", currencyList));
-        when(userDatabase.findUser(any())).thenReturn(searchedUser);
-        when(userMapper.maptoUserDTO(any())).thenReturn(new UserDTO(1L, "Mateusz"));
+        when(userFacade.getUser(any())).thenReturn(new UserDTO(1L, "Mateusz"));
 
         //WHEN and THEN
         mockMvc.perform(MockMvcRequestBuilders
@@ -56,11 +55,9 @@ class UserControlerTest {
     @Test
     public void UserControllerGetUsers() throws Exception {
         //GIVEN
-        List<User> userList = new ArrayList<>();
         List<UserDTO> userDTOList = new ArrayList<>();
         userDTOList.add(new UserDTO(2L , "Tadeusz"));
-        when(userDatabase.showUsers()).thenReturn(userList);
-        when(userMapper.mapToListUserDTO(any())).thenReturn(userDTOList);
+        when(userFacade.getUsers()).thenReturn(userDTOList);
 
         //WHEN and THEN
         mockMvc.perform(MockMvcRequestBuilders
@@ -72,13 +69,10 @@ class UserControlerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].name", Matchers.is("Tadeusz")));
     }
     @Test
-    public void UserControllerCreateUserIfNotExist() throws Exception {
+    public void UserControllerCreateUser() throws Exception {
         //GIVEN
-        Optional<User> searchedUser = Optional.ofNullable(null);
         UserDTO userDTO = new UserDTO("Zbigniew");
-        when(userDatabase.findUserByName(any())).thenReturn(searchedUser);
-        when(userDatabase.save(any())).thenReturn(new User(2L, "Zbigniew" , null));
-        when(userMapper.maptoUserDTO(any())).thenReturn(new UserDTO(2L, "Zbigniew"));
+        when(userFacade.createUser(any())).thenReturn(new UserDTO(2L, "Zbigniew"));
         Gson gson = new Gson();
         String jsonContent = gson.toJson(userDTO);
 
@@ -92,32 +86,11 @@ class UserControlerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.userID", Matchers.is(2)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name", Matchers.is("Zbigniew")));
     }
-    @Test
-    public void UserControllerCreateUserIfExist() throws Exception {
-        //GIVEN
-        Optional<User> searchedUser = Optional.ofNullable(new User(1L, "Zbigniew", null));
-        when(userDatabase.findUserByName(any())).thenReturn(searchedUser);
-        UserDTO userDTO = new UserDTO("Zbigniew");
-        Gson gson = new Gson();
-        String jsonContent = gson.toJson(userDTO);
 
-        //WHEN and THEN
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/project/user")
-                .contentType(MediaType.APPLICATION_JSON)
-                .characterEncoding("UTF-8")
-                .content(jsonContent))
-                .andExpect(MockMvcResultMatchers.status().is(200))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name", Matchers.is("Zbigniew")));
-    }
     @Test
     public void UserControllerChangeUserName() throws Exception {
         //GIVEN
-        List<Currency> currencyList = new ArrayList<>();
-        Optional<User> searchedUser = Optional.ofNullable(new User(3L, "Tadeusz" , currencyList));
-        when(userDatabase.findUser(any())).thenReturn(searchedUser);
-        when(userDatabase.save(any())).thenReturn(new User(3L, "Marcin" , currencyList));
-        when(userMapper.maptoUserDTO(any())).thenReturn(new UserDTO(3L, "Marcin"));
+        when(userFacade.changeUserName(any(), any())).thenReturn(new UserDTO(3L, "Marcin"));
 
         //WHEN and THEN
         mockMvc.perform(MockMvcRequestBuilders
@@ -130,6 +103,7 @@ class UserControlerTest {
     @Test
     public void UserControllerDeleteUser() throws Exception {
         //GIVEN
+
         //WHEN and THEN
         mockMvc.perform(MockMvcRequestBuilders
                 .delete("/project/user/1")

@@ -45,7 +45,6 @@ public class UserTestSuite {
         //Then
         assertEquals(id, userRepository.findById(id).get().getUserID());
         assertEquals("Artur",userRepository.findById(id).get().getUserName());
-        assertEquals(currencyList.size(), userRepository.findById(id).get().getCurrency().size());
         //CleanUp
         userRepository.deleteById(id);
     }
@@ -77,9 +76,11 @@ public class UserTestSuite {
         //When
         userRepository.save(user);
         Long id = user.getUserID();
-        currencyList.add( new Currency("dolar amerykański","USD",new BigDecimal(0),user));
+        Currency newCurrency = new Currency("dolar amerykański","USD",new BigDecimal(0),user);
+        currencyRepository.save(newCurrency);
+        Long curID = newCurrency.getCurrencyID();
+        currencyList.add(newCurrency);
         userRepository.save(new User(id , "Artur", currencyList));
-        Long curID = userRepository.findById(id).get().getCurrency().get(0).getCurrencyID();
 
         //Then
         assertEquals(id, userRepository.findById(id).get().getUserID());

@@ -6,15 +6,14 @@ import com.kodilla.finalproject.domain.CurrencyCode;
 import com.kodilla.finalproject.domain.CurrencyDTO;
 import com.kodilla.finalproject.domain.User;
 import com.kodilla.finalproject.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class CurrencyMapper {
+    @Autowired
     UserRepository userRepository;
     private Map<CurrencyCode, String> currencyMap;
     public CurrencyMapper(){
@@ -37,7 +36,7 @@ public class CurrencyMapper {
 
     public Currency maptoCurrency(CurrencyDTO currencyDTO, Long userID){
         User user = userRepository.findById(userID).orElse(new User());
-        return new Currency(currencyDTO.getCurrencyName(),currencyDTO.getCurrencyCode(), currencyDTO.getAccount(), user);
+            return new Currency(currencyDTO.getCurrencyName(), currencyDTO.getCurrencyCode(), currencyDTO.getAccount(), user);
     }
     public CurrencyDTO maptoCurrencyDTO(Currency currency){
         return new CurrencyDTO(currency.getCurrencyName(), currency.getCurrencyCode(), currency.getAccount());

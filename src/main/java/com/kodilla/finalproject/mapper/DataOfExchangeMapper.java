@@ -5,6 +5,7 @@ import com.kodilla.finalproject.domain.DataOfExchangeDTO;
 import com.kodilla.finalproject.domain.RateOfExchange;
 import com.kodilla.finalproject.domain.RateOfExchangeDTO;
 import com.kodilla.finalproject.repository.DataOFExchangeRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Service
 public class DataOfExchangeMapper {
+    @Autowired
     private DataOFExchangeRepository dataOFExchangeRepository;
 
     public DataOfExchangeMapper(DataOFExchangeRepository dataOFExchangeRepository){

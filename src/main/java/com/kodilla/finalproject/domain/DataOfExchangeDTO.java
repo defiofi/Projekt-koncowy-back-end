@@ -11,15 +11,16 @@ import java.util.stream.Collectors;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DataOfExchangeDTO {
     @JsonProperty("tradingDate")
-    LocalDate tradingDate;
+    private LocalDate tradingDate;
     @JsonProperty("rates")
-    RateOfExchangeDTO[] rates;
+    private RateOfExchangeDTO[] rates;
 
     public DataOfExchangeDTO(){
     }
     public DataOfExchangeDTO(LocalDate tradingDate , RateOfExchangeDTO[] rates) {
         this.tradingDate = tradingDate;
-        for(int i = 0 ; i< rates.length ; i++) {
+        this.rates = new RateOfExchangeDTO[(int)Arrays.stream(rates).count()];
+        for(int i = 0 ; i< Arrays.stream(rates).count() ; i++) {
             this.rates[i] = new RateOfExchangeDTO(
                     rates[i].getCurrencyName(), rates[i].getCurrencyCode(), rates[i].getBid(), rates[i].getAsk()
             );

@@ -40,8 +40,8 @@ public class CurrencyTestSuite {
         currencyRepository.save(currency);
         Long IdCur = currency.getCurrencyID();
         List<Currency> currencyList = new ArrayList<>();
-        currencyList.add(currency);
         User user = new User("Test", currencyList);
+        userRepository.save(user);
         currencyRepository.save(new Currency(IdCur,"funt szterling","GBP", new BigDecimal(0.0), user ));
         //Then
         assertEquals(IdCur, currencyRepository.findById(IdCur).get().getCurrencyID());
@@ -49,6 +49,7 @@ public class CurrencyTestSuite {
         assertEquals("GBP", currencyRepository.findById(IdCur).get().getCurrencyCode());
         //CleanUp
         currencyRepository.deleteById(IdCur);
+        userRepository.delete(user);
     }
     @Test
     public void TestUserModification(){
@@ -76,8 +77,9 @@ public class CurrencyTestSuite {
         currencyRepository.save(currency);
         Long IdCur = currency.getCurrencyID();
         List<Currency> currencyList = new ArrayList<>();
-        currencyList.add(currency);
+        //currencyList.add(currency);
         User user = new User("Test", currencyList);
+        userRepository.save(user);
         Currency savedCurrency = currencyRepository.save(new Currency(IdCur,"funt szterling","GBP", new BigDecimal(0.0), user ));
         Long userID = savedCurrency.getUser().getUserID();
         assertTrue(currencyRepository.findById(IdCur).isPresent());
@@ -87,5 +89,7 @@ public class CurrencyTestSuite {
         currencyRepository.delete(savedCurrency);
         assertFalse(currencyRepository.existsById(IdCur));
         assertTrue(userRepository.findById(userID).isPresent());
+        //CLEAN
+        userRepository.delete(user);
     }
 }

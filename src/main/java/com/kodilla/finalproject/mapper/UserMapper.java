@@ -3,7 +3,6 @@ package com.kodilla.finalproject.mapper;
 import com.kodilla.finalproject.domain.Currency;
 import com.kodilla.finalproject.domain.User;
 import com.kodilla.finalproject.domain.UserDTO;
-import com.kodilla.finalproject.repository.CurrencyRepository;
 import com.kodilla.finalproject.repository.UserRepository;
 import org.springframework.stereotype.Service;
 

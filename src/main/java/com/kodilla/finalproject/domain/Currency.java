@@ -52,8 +52,9 @@ public class Currency {
         return account;
     }
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
-
+    @ManyToOne(//cascade = {CascadeType.PERSIST },
+            targetEntity = User.class
+    )
     public User getUser() { return user; }
 
     private void setCurrencyID(Long currencyID) { this.currencyID = currencyID; }

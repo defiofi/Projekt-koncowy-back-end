@@ -36,8 +36,8 @@ public class User {
 
     @OneToMany(
             targetEntity = Currency.class,
-            //mappedBy = "user",
-            cascade = CascadeType.ALL,
+            //cascade = CascadeType.ALL,
+            mappedBy = "user",
             fetch = FetchType.EAGER
     )
     public List<Currency> getCurrency() { return currencyList; }
