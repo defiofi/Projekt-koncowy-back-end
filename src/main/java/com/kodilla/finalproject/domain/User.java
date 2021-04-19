@@ -36,7 +36,6 @@ public class User {
 
     @OneToMany(
             targetEntity = Currency.class,
-            //cascade = CascadeType.ALL,
             mappedBy = "user",
             fetch = FetchType.EAGER
     )

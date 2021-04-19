@@ -5,7 +5,6 @@ import com.kodilla.finalproject.domain.User;
 import com.kodilla.finalproject.domain.UserDTO;
 import com.kodilla.finalproject.repository.UserRepository;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 

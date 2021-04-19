@@ -2,7 +2,6 @@ package com.kodilla.finalproject.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
