@@ -23,7 +23,7 @@ public class RateOfExchangeTestSuite {
     public void TestRateOfExchangeCreate(){
         //Give
         RateOfExchange newRateOfExchange = rateOfExchangeRepository.save(
-                new RateOfExchange("dolar amerykański","USD",3.1234, 3.5678, null)
+                new RateOfExchange("dolar amerykański","USD",6.1234, 6.5678, null)
         );
 
         //When
@@ -39,18 +39,18 @@ public class RateOfExchangeTestSuite {
     public void TestRateOfExchangeRead(){
         //Give
         RateOfExchange newRateOfExchange = rateOfExchangeRepository.save(
-                new RateOfExchange("dolar amerykański","USD",3.1234, 3.5678, null)
+                new RateOfExchange("dolar amerykański","USD",1.1234, 1.5678, null)
         );
         //When
         Long rateId = newRateOfExchange.getRateID();
         rateOfExchangeRepository.save(
-                new RateOfExchange(rateId,"dolar amerykański","USD",3.1234, 3.5678, null));
+                new RateOfExchange(rateId,"dolar amerykański","USD",7.1234, 7.5678, null));
         //Then
         assertEquals(rateId, rateOfExchangeRepository.findById(rateId).get().getRateID() );
         assertEquals("dolar amerykański", rateOfExchangeRepository.findById(rateId).get().getCurrencyName());
         assertEquals("USD", rateOfExchangeRepository.findById(rateId).get().getCurrencyCode());
-        assertEquals(3.1234, rateOfExchangeRepository.findById(rateId).get().getBid());
-        assertEquals(3.5678, rateOfExchangeRepository.findById(rateId).get().getAsk());
+        assertEquals(7.1234, rateOfExchangeRepository.findById(rateId).get().getBid());
+        assertEquals(7.5678, rateOfExchangeRepository.findById(rateId).get().getAsk());
         //Clean
         rateOfExchangeRepository.delete(rateOfExchangeRepository.findById(rateId).get());
     }
@@ -58,7 +58,7 @@ public class RateOfExchangeTestSuite {
     public void TestRateOfExchangeModification(){
         //Give
         RateOfExchange newRateOfExchange = rateOfExchangeRepository.save(
-                new RateOfExchange("dolar amerykański","USD",3.1234, 3.5678, null)
+                new RateOfExchange("dolar amerykański","USD",8.1234, 8.5678, null)
         );
         //When
         Long rateId = newRateOfExchange.getRateID();
@@ -66,8 +66,8 @@ public class RateOfExchangeTestSuite {
         assertEquals(rateId, rateOfExchangeRepository.findById(rateId).get().getRateID() );
         assertEquals("dolar amerykański", rateOfExchangeRepository.findById(rateId).get().getCurrencyName());
         assertEquals("USD", rateOfExchangeRepository.findById(rateId).get().getCurrencyCode());
-        assertEquals(3.1234, rateOfExchangeRepository.findById(rateId).get().getBid());
-        assertEquals(3.5678, rateOfExchangeRepository.findById(rateId).get().getAsk());
+        assertEquals(8.1234, rateOfExchangeRepository.findById(rateId).get().getBid());
+        assertEquals(8.5678, rateOfExchangeRepository.findById(rateId).get().getAsk());
         rateOfExchangeRepository.save(
                 new RateOfExchange(rateId,"dolar australijski","AUD",2.1234, 2.5678, null)
         );
@@ -83,7 +83,7 @@ public class RateOfExchangeTestSuite {
     public void TestRateOfExchangeDelete(){
         //Give
         RateOfExchange newRateOfExchange = rateOfExchangeRepository.save(
-                new RateOfExchange("dolar amerykański","USD",3.1234, 3.5678, null)
+                new RateOfExchange("dolar amerykański","USD",9.1234, 9.5678, null)
         );
         //When
         Long rateId = newRateOfExchange.getRateID();
@@ -91,13 +91,14 @@ public class RateOfExchangeTestSuite {
         rateOfExchangeList.add(newRateOfExchange);
         DataOfExchange dataOfExchange = new DataOfExchange( LocalDate.now(), rateOfExchangeList);
         rateOfExchangeRepository.save(
-                new RateOfExchange(rateId,"dolar amerykański","USD",3.1234, 3.5678, dataOfExchange));
+                new RateOfExchange(rateId,"dolar amerykański","USD",9.1234, 9.5678, dataOfExchange));
         //Then
         Long dataId = rateOfExchangeRepository.findById(rateId).get().getData().getDataID();
         assertTrue(rateOfExchangeRepository.findById(rateId).isPresent());
         rateOfExchangeRepository.delete(rateOfExchangeRepository.findById(rateId).get());
         assertFalse(rateOfExchangeRepository.findById(rateId).isPresent());
         assertTrue(dataOFExchangeRepository.findById(dataId).isPresent());
-        
+        //CLEAN
+        dataOFExchangeRepository.delete(dataOFExchangeRepository.findById(dataId).get());
     }
 }

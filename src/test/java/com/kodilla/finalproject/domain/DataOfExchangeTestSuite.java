@@ -29,7 +29,7 @@ public class DataOfExchangeTestSuite {
         );
         List<RateOfExchange> rateOfExchangeList = new ArrayList<>();
         rateOfExchangeList.add(
-                new RateOfExchange("dolar amerykański","USD",3.1234,3.5678, newDataOfExchange)
+                new RateOfExchange("dolar amerykański","USD",13.1234,13.5678, newDataOfExchange)
         );
         Long Id = newDataOfExchange.getDataID();
         //When
@@ -47,7 +47,7 @@ public class DataOfExchangeTestSuite {
         LocalDate date = LocalDate.now();
         DataOfExchange newDataOfExchange = dataOFExchangeRepository.save(new DataOfExchange( date, null));
         List<RateOfExchange> rateOfExchangeList = new ArrayList<>();
-        rateOfExchangeList.add(new RateOfExchange("dolar amerykański","USD",3.1234,3.5678, newDataOfExchange));
+        rateOfExchangeList.add(new RateOfExchange("dolar amerykański","USD",12.1234,12.5678, newDataOfExchange));
         Long Id = newDataOfExchange.getDataID();
         //When
         dataOFExchangeRepository.save(new DataOfExchange(newDataOfExchange.getDataID(), newDataOfExchange.getTradingDate(), rateOfExchangeList ));
@@ -65,19 +65,22 @@ public class DataOfExchangeTestSuite {
         LocalDate newdate = LocalDate.parse("2021-04-06");
         DataOfExchange newDataOfExchange = dataOFExchangeRepository.save(new DataOfExchange( date, null));
         List<RateOfExchange> rateOfExchangeList = new ArrayList<>();
-        rateOfExchangeList.add(new RateOfExchange("dolar amerykański","USD",3.1234,3.5678, newDataOfExchange));
+        rateOfExchangeList.add(new RateOfExchange("dolar amerykański","USD",11.1234,11.5678, newDataOfExchange));
         Long Id = newDataOfExchange.getDataID();
         //When
         dataOFExchangeRepository.save(new DataOfExchange(newDataOfExchange.getDataID(), newDataOfExchange.getTradingDate(), rateOfExchangeList ));
+        Long rateId = dataOFExchangeRepository.findById(Id).get().getRateOfExchange().get(0).getRateID();
         //Then
         assertEquals(Id , dataOFExchangeRepository.findById(Id).get().getDataID());
         assertEquals(date, dataOFExchangeRepository.findById(Id).get().getTradingDate());
         assertEquals(1 , dataOFExchangeRepository.findById(Id).get().getRateOfExchange().size());
-        dataOFExchangeRepository.save(new DataOfExchange(newDataOfExchange.getDataID(), newdate, null ));
+        dataOFExchangeRepository.save(new DataOfExchange(newDataOfExchange.getDataID(), newdate, rateOfExchangeList ));
         assertEquals(Id , dataOFExchangeRepository.findById(Id).get().getDataID());
         assertEquals(newdate, dataOFExchangeRepository.findById(Id).get().getTradingDate());
         //Clean
+        rateOfExchangeRepository.deleteById(rateId);
         dataOFExchangeRepository.delete(dataOFExchangeRepository.findById(Id).get());
+        //rateOfExchangeRepository.delete(rateOfExchangeList.get(0));
     }
     @Test
     public void TestDataOfExchangeDelete(){
@@ -85,7 +88,7 @@ public class DataOfExchangeTestSuite {
         LocalDate date = LocalDate.now();
         DataOfExchange newDataOfExchange = dataOFExchangeRepository.save(new DataOfExchange( date, null));
         List<RateOfExchange> rateOfExchangeList = new ArrayList<>();
-        rateOfExchangeList.add(new RateOfExchange("dolar amerykański","USD",3.1234,3.5678, newDataOfExchange));
+        rateOfExchangeList.add(new RateOfExchange("dolar amerykański","USD",10.1234,10.5678, newDataOfExchange));
         Long Id = newDataOfExchange.getDataID();
         //When
         dataOFExchangeRepository.save(new DataOfExchange(newDataOfExchange.getDataID(), newDataOfExchange.getTradingDate(), rateOfExchangeList ));

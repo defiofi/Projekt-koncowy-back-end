@@ -38,15 +38,16 @@ public class UserTestSuite {
         User user = new User("Artur", null);
         List<Currency> currencyList = new ArrayList<>();
         //When
-        User savedUser = userRepository.save(user);
+        userRepository.save(user);
         Long id = user.getUserID();
-        currencyList.add( new Currency("dolar amerykański","USD",new BigDecimal(0),user));
+        currencyList.add( new Currency("korona szwedzka","SEK",new BigDecimal(0),user));
         userRepository.save(new User(id , "Artur", currencyList));
         //Then
         assertEquals(id, userRepository.findById(id).get().getUserID());
         assertEquals("Artur",userRepository.findById(id).get().getUserName());
         //CleanUp
         userRepository.deleteById(id);
+        currencyRepository.delete(currencyList.get(0));
     }
     @Test
     public void TestUserModification(){
@@ -71,23 +72,15 @@ public class UserTestSuite {
     public void TestUserDelete(){
         //Give
         User user = new User("Artur", null);
-        List<Currency> currencyList = new ArrayList<>();
 
         //When
         userRepository.save(user);
         Long id = user.getUserID();
-        Currency newCurrency = new Currency("dolar amerykański","USD",new BigDecimal(0),user);
-        currencyRepository.save(newCurrency);
-        Long curID = newCurrency.getCurrencyID();
-        currencyList.add(newCurrency);
-        userRepository.save(new User(id , "Artur", currencyList));
 
         //Then
         assertEquals(id, userRepository.findById(id).get().getUserID());
         assertEquals("Artur",userRepository.findById(id).get().getUserName());
-        assertEquals(currencyList.size(), userRepository.findById(id).get().getCurrency().size());
         userRepository.deleteById(id);
         assertFalse(userRepository.findById(id).isPresent());
-        assertFalse(currencyRepository.findById(curID).isPresent());
     }
 }
