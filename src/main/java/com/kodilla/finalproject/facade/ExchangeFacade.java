@@ -111,7 +111,7 @@ public class ExchangeFacade {
         }
         Currency userPLN = searchCurrency(searchedUser.orElse(new User()), "PLN");
         Currency boughtCurrency = searchCurrency(searchedUser.orElse(new User()), currency_Code);
-        if(userPLN.getAccount().subtract(new BigDecimal(currencyRate.getAsk()).multiply(new BigDecimal(value))).compareTo(new BigDecimal(0.0))<=0){
+        if(userPLN.getAccount().subtract(new BigDecimal(currencyRate.getAsk()).multiply(new BigDecimal(value))).compareTo(new BigDecimal(0.0))<0){
             return currencyMapper.maptoListCurrencyDTO(searchedUser.get().getCurrency());
         } else{
             currencyDatabase.save(new Currency(boughtCurrency.getCurrencyID(),
@@ -140,7 +140,7 @@ public class ExchangeFacade {
         }
         Currency userPLN = searchCurrency(searchedUser.orElse(new User()), "PLN");
         Currency soldCurrency = searchCurrency(searchedUser.orElse(new User()), currency_Code);
-        if(soldCurrency.getAccount().subtract(new BigDecimal(value)).compareTo(new BigDecimal(0.0))<=0){
+        if(soldCurrency.getAccount().subtract(new BigDecimal(value)).compareTo(new BigDecimal(0.0))<0){
             return currencyMapper.maptoListCurrencyDTO(searchedUser.get().getCurrency());
         }else{
             currencyDatabase.save(new Currency(soldCurrency.getCurrencyID(),
